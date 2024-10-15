@@ -1,7 +1,7 @@
 ------------------
 Good to Know 
 ---------------
-1) Total Sales / Total Revenue = sum ( qty * price per item )
+1) Total Sales / Total Revenue / Total orders Value = sum ( qty * price per item )
 2) AOV = total order  qty / total sales. 
 
 
@@ -72,12 +72,71 @@ having(count(ord_itm.order_id)>5)
 order by customer_id
 
 ===========================================================================================================================================================================
-🟢.Q.4. Monthly Sales Trend
-Query monthly total sales over the past year.
+🟢.Q.4. Monthly Sales Trend :- Query monthly total sales over the past year.
 Challenge: Display the sales trend, grouping by month, return current_month sale, last month sale!
 
 --------------
 Solution :-
 --------------
 
+select month(ord.order_date),year(ord.order_date),
+round(sum(ord_itm.quantity*ord_itm.price_per_unit),2) as monthly_total_sales,
+lag(round(sum(ord_itm.quantity*ord_itm.price_per_unit),2),1,0) over(order by year(ord.order_date),month(ord.order_date)) as prv_month
+from
+order_items as ord_itm
+join orders ord
+using(order_id)
+where ord.order_date >= date_add(current_date(),interval -12 month)
+group by month(ord.order_date),year(ord.order_date)
+
+===============================================================================================================================================================================
+🟢.Q.5. Customers with No Purchases Find customers who have registered but never placed an order.
+Challenge: List customer details and the time since their registration.
+
+--------------
+Solution :-
+--------------
+select * from
+customers where customer_id not in (
+select customer_id from
+orders as ord_itm
+)
+
+===================================================================================================================================================================================
+
+🟢.Q.6.Least-Selling Categories by State
+Identify the least-selling product category for each state.
+Challenge: Include the total sales for that category within each state.
+
+--------------
+Solution :-
+--------------
+
+with cte as (
+select 
+c.category_name,cust.state,
+round(sum(ord_itm.quantity*ord_itm.price_per_unit),2) as total_sales,
+dense_rank() over(partition by cust.state order by sum(ord_itm.quantity*ord_itm.price_per_unit)) as rnk
+from order_items as ord_itm
+join orders as ords
+using(order_id)
+join customers as cust
+using(customer_id)
+join products as p
+using(product_id)
+join category as c
+using(category_id)
+group by 1,2
+)
+select state as state,category_name as least_seiing_category,total_sales
+from cte where rnk <= 1
+
+======================================================================================================================================================================================
+
+🟢.Q.7. Customer Lifetime Value (CLTV)
+Calculate the total value of orders placed by each customer over their lifetime.
+Challenge: Rank customers based on their CLTV.
+--------------
+Solution :-
+--------------
 
