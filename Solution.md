@@ -139,4 +139,16 @@ Challenge: Rank customers based on their CLTV.
 --------------
 Solution :-
 --------------
+select c.first_name,c.last_name,
+round(sum(ord_itm.quantity*ord_itm.price_per_unit),2) as total_order_value,
+dense_rank() over w as rnk
+from order_items as ord_itm
+join orders as ord
+using(order_id)
+left join customers as c
+using(customer_id)
+group by c.first_name,c.last_name
+window w as (order by round(sum(ord_itm.quantity*ord_itm.price_per_unit),2) desc)
+
+
 
