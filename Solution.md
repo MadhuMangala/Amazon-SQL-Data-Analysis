@@ -1,3 +1,16 @@
+------------------
+Good to Know 
+---------------
+1) Total Sales / Total Revenue = sum ( qty * price per item )
+2) AOV = total order  qty / total sales. 
+
+
+
+
+
+
+
+
 🟢.Q.1. Top Selling Products Query the top 10 products by total sales value.
 Challenge: Include product name, total quantity sold, and total sales value.
 --------------
@@ -37,7 +50,7 @@ as Contribution_by_Category
 from total_revenue_by_category
 =====================================================================================================================================================================
 
-🟢.3. Average Order Value (AOV) Compute the average order value for each customer.
+🟢.Q.3. Average Order Value (AOV) Compute the average order value for each customer.
 Challenge: Include only customers with more than 5 orders.
 Total Revenue = Qty * price item.
 AOV= Total Revenue/Total Number of Orders 
@@ -45,6 +58,7 @@ AOV= Total Revenue/Total Number of Orders
 --------------
 Solution :-
 --------------
+
 SELECT c.customer_id,
 round((sum(ord_itm.quantity * ord_itm.price_per_unit)
 / count(ord_itm.order_id)),2) as AOV 
@@ -56,4 +70,14 @@ using(customer_id)
 group by c.customer_id
 having(count(ord_itm.order_id)>5)
 order by customer_id
+
+===========================================================================================================================================================================
+🟢.Q.4. Monthly Sales Trend
+Query monthly total sales over the past year.
+Challenge: Display the sales trend, grouping by month, return current_month sale, last month sale!
+
+--------------
+Solution :-
+--------------
+
 
