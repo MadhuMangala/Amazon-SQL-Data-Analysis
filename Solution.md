@@ -42,10 +42,9 @@ Challenge: Include only customers with more than 5 orders.
 Total Revenue = Qty * price item.
 AOV= Total Revenue/Total Number of Orders 
 ​
-
-
-Solution :- 
-
+--------------
+Solution :-
+--------------
 SELECT c.customer_id,
 round((sum(ord_itm.quantity * ord_itm.price_per_unit)
 / count(ord_itm.order_id)),2) as AOV 
@@ -57,3 +56,4 @@ using(customer_id)
 group by c.customer_id
 having(count(ord_itm.order_id)>5)
 order by customer_id
+
