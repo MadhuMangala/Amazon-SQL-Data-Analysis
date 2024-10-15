@@ -139,4 +139,78 @@ group by c.first_name,c.last_name
 window w as (order by round(sum(ord_itm.quantity*ord_itm.price_per_unit),2) desc)
 
 ```
+---
+![image](https://github.com/user-attachments/assets/749d0635-057b-47e8-8a98-4b577198b8d4)
 
+---
+
+🟢.Q.8. Inventory Stock Alerts
+Query products with stock levels below a certain threshold (e.g., less than 10 units).
+Challenge: Include last restock date and warehouse information.
+
+### Solutions Implemented:
+``` SQL
+SELECT inv.product_id,inv.stock,inv.warehouse_id,inv.last_stock_date,
+p.product_name 
+FROM amazon.inventory inv
+join products as p
+using(product_id)
+where stock < 10
+```
+---
+![image](https://github.com/user-attachments/assets/72501b5e-edb4-489e-96ca-a39fc13196d2)
+---
+🟢.Q.9. Shipping Delays
+Identify orders where the shipping date is later than 3 days after the order date.
+Challenge:customer_id,product_id,order_Date,shipping_date,delays_in_days,product_name,delivery_status
+
+### Solutions Implemented:
+``` SQL
+/* Shipping Delays
+Identify orders where the shipping date is later than 3 days after the order date.
+Challenge: Include customer, order details, and delivery provider.
+*/
+
+with cte as (
+SELECT ord.customer_id,ord_itm.product_id,p.product_name,
+ord_itm.order_id,ord.order_date,
+ship.shipping_date,
+datediff(ship.shipping_date,ord.order_date) as shipping_delays,
+ship.delivery_status
+FROM amazon.order_items as ord_itm
+join orders as ord
+using(order_id)
+join products as p
+using(product_id)
+join shipping as ship
+using(order_id)
+)
+
+select * from cte where shipping_delays > 3
+```
+---
+![image](https://github.com/user-attachments/assets/92fb49ab-ec35-4439-95db-996950191cc8)
+---
+🟢.Q.10. Payment Success Rate 
+Calculate the percentage of successful payments across all orders.
+Challenge: Include breakdowns by payment status (e.g., failed, pending).
+### Solutions Implemented:
+``` SQL
+select payment_status ,count(payment_id) as payments_status_count,
+sum(count(payment_id))over() as total_paymanets,
+round((count(payment_id) /sum(count(payment_id))over())*100,2) as payment_status_contribution
+from payments
+group by payment_status
+
+```
+---
+![image](https://github.com/user-attachments/assets/20fbf839-5df8-4948-b5c7-caeded0a9a64)
+
+---
+🟢.Q.11. Top Performing Sellers
+Find the top 5 sellers based on total sales value.
+Challenge: Include both successful and failed orders, and display their percentage of successful orders.
+### Solutions Implemented:
+``` SQL
+
+```
