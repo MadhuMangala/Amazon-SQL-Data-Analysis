@@ -212,5 +212,38 @@ Find the top 5 sellers based on total sales value.
 Challenge: Include both successful and failed orders, and display their percentage of successful orders.
 ### Solutions Implemented:
 ``` SQL
+--  Top Performing Sellers
+-- Find the top 5 sellers based on total sales value.
+-- Include both successful and failed orders, and display their percentage of successful orders.
+with cte as (
+select s.seller_id,
+round(sum(ord_itm.quantity*ord_itm.price_per_unit),2) as total_sales_by_seller,
+count(case when order_status = "Cancelled" then 1 else null end) as cancelled_orders_cnt,
+count(case when order_status = "Completed" then 1 else null end) as Completed_orders_cnt,
+count(ord_itm.order_id) as total_orders_cnt 
+from order_items as ord_itm
+join orders as ord
+using(order_id)
+join sellers as s
+using(seller_id)
+-- where order_status in ("Completed","Cancelled")
+group by s.seller_id
+order by s.seller_id , total_sales_by_seller desc limit 5
+)
 
+select *,
+round((Completed_orders_cnt/total_orders_cnt)*100,2) as successful_orders_contribution
+from cte
+-- order by total_sales_by_seller desc limit 5
+
+```
+---
+![image](https://github.com/user-attachments/assets/2c8efd00-cdd1-4286-9a22-8c87a4658c74)
+---
+
+🟢.Q.12. Product Profit Margin
+Calculate the profit margin for each product (difference between price and cost of goods sold).
+Challenge: Rank products by their profit margin, showing highest to lowest.
+### Solutions Implemented:
+``` SQL
 ```
