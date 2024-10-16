@@ -3,7 +3,8 @@
 1) Total Sales / Total Revenue / Total orders Value = sum ( qty * price per item )
 2) AOV = total order  qty / total sales.
 3) Profit Margin  = total_price_product(i.e qty * price_per_item) - total_cogs (i.e qty * cogs)
-
+4) order means either it may be order units or order_ids , if they did not mentions anythings else,
+    then select any one from the above.
 ```
 
 
