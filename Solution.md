@@ -1,7 +1,8 @@
 ## **Good To Know**
 ```
 1) Total Sales / Total Revenue / Total orders Value = sum ( qty * price per item )
-2) AOV = total order  qty / total sales. 
+2) AOV = total order  qty / total sales.
+3) Profit Margin per item  = price per item - cogs 
 
 ```
 
@@ -246,4 +247,5 @@ Calculate the profit margin for each product (difference between price and cost 
 Challenge: Rank products by their profit margin, showing highest to lowest.
 ### Solutions Implemented:
 ``` SQL
+
 ```
