@@ -405,6 +405,8 @@ group by 1,2,3
 select * from customer_ord_information
 where rnk <= 5
 ```
+
+
 ![image](https://github.com/user-attachments/assets/c0c061a6-152d-49b6-b5cc-c2664d180d9a)
 ---
 
