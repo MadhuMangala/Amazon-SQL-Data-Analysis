@@ -2,7 +2,7 @@
 ```
 1) Total Sales / Total Revenue / Total orders Value = sum ( qty * price per item )
 2) AOV = total order  qty / total sales.
-3) Profit Margin per item  = price per item - cogs 
+3) Profit Margin  = total_price_product(i.e qty * price_per_item) - total_cogs (i.e qty * cogs)
 
 ```
 
@@ -243,9 +243,169 @@ from cte
 ---
 
 🟢.Q.12. Product Profit Margin
-Calculate the profit margin for each product (difference between price and cost of goods sold).
-Challenge: Rank products by their profit margin, showing highest to lowest.
+Calculate the total profit margin for each product (difference between price and cost of goods sold).
+Challenge: Rank products by their profit margin,total_sales,_total_cogs,profit_margin_%, showing highest to lowest.
 ### Solutions Implemented:
 ``` SQL
+/*
+12. Product Profit Margin
+Calculate the profit margin for each ordered product (difference between price and cost of goods sold).
+Challenge: Rank products by their profit margin, showing highest to lowest.
+*/
+with cte as (
+select ord_itm.product_id,p.product_name,
+round((ord_itm.quantity * ord_itm.price_per_unit),2) as total_sales,
+round((ord_itm.quantity * p.cogs),2) as total_cogs
+from order_items as ord_itm
+join products as p
+using(product_id)
+-- where ord_itm.product_id = 2
+),
+PandL_values as (
+select product_id,product_name,
+round(sum(total_sales),2) as total_sales,
+round(sum(total_cogs),2) as total_cogs,
+round((sum(total_sales) - sum(total_cogs)),2) as total_profit_margin,
+round(((sum(total_sales) - sum(total_cogs)) 
+/sum(total_sales))*100,2) as profit_margin_percent
+from cte 
+group by 1,2
+)
+select *,dense_rank()over(order by profit_margin_percent desc) as rnk from PandL_values
+```
+---
+![image](https://github.com/user-attachments/assets/7f42f734-abd1-4e62-9f04-bc341abd7022)
+---
+
+🟢.Q.13.Most Returned Products
+Query the top 10 products by the number of returns.
+Challenge: Display the return rate as a percentage of total units sold for each product.
+### Solutions Implemented:
+``` SQL
+with cte as
+(
+select ord_itm.product_id,p.product_name,
+sum(ord_itm.quantity) as total_order_qunatity,
+sum(case when ord.order_status = "Returned" then ord_itm.quantity else null end) as total_return_prd_cnt
+from order_items as ord_itm
+join orders as ord
+using(order_id)
+join products as p
+using(product_id)
+group by 1,2
+order by total_return_prd_cnt desc
+limit 10
+)
+select *,
+round((total_return_prd_cnt/total_order_qunatity)*100,2) as return_rate
+from cte
+```
+---
+![image](https://github.com/user-attachments/assets/d90d54c2-d08f-4792-a648-f8e80eb581a9)
+---
+🟢.Q.14.Orders Pending Shipment
+Find orders that have been paid but are still pending shipment.
+Challenge: Include order details, payment date, and customer information.
+### Solutions Implemented:
+```sql
+select * from orders as
+ord
+join customers as cust
+using(customer_id)
+join payments as pymnt
+using(order_id)
+where pymnt.payment_status = "Payment Successed"
+	and ord.order_status = "Inprogress"
+```
+---
+![image](https://github.com/user-attachments/assets/e02eca95-1f1e-4ce8-9b13-12734cb6f8e3)
+---
+🟢.Q.15. Inactive Sellers
+Identify sellers who haven’t made any sales in the last 6 months.
+Challenge: Show the last sale date and total sales from those sellers
+```sql
+with no_sales_seller_ids as(
+select seller_id from sellers
+where seller_id not in (
+select seller_id from orders as ord
+where order_date >= date_add(current_date(),interval -6 month)
+))
+select ord.seller_id,
+round(sum(ord_itm.quantity*ord_itm.price_per_unit),2)as total_sales
+,max(order_date) as last_sales_date
+from orders as ord
+join order_items as ord_itm
+using(order_id)
+where ord.seller_id in (select seller_id from no_sales_seller_ids)
+group by ord.seller_id
 
 ```
+---
+No Sales made by seller id 53,54 from last one year.
+---
+🟢.Q.16. IDENTITY customers into returning or new
+if the customer has done more than 5 return (based on order cnt not unit) categorize them as returning otherwise new
+Challenge: List customers id, name, total orders, total returns
+```sql
+with cte as ( 
+select cust.customer_id,
+concat_ws(" ",cust.first_name,cust.last_name) as name,
+count(ord.order_id) as total_orders,
+sum(case when ord.order_status="Returned" then 1 else 0 end) as total_returns
+-- sum(case when ord.order_status = "%Returned%" then 1 else 0 end) as total_returns 
+from orders as ord
+join customers as cust
+using(customer_id)
+group by 1,2
+order by  total_returns desc
+)
+
+select *,
+case when total_returns >= 5 then "Returning" else "New" end as "return status"
+from cte
+
+```
+---
+![image](https://github.com/user-attachments/assets/1ded3431-6191-485b-b61c-a16e1b1be855)
+---
+🟢.Q.17.Revenue by Shipping Provider Calculate the total revenue handled by each shipping provider.
+Challenge: Include the total number of orders(units) handled and the average delivery time for each provider
+```sql
+select shpng.shiping_provider,
+sum(ord_itm.quantity) as total_orders,
+round(sum(ord_itm.quantity*ord_itm.price_per_unit),2) as total_revenue ,
+avg(datediff(shpng.shipping_date,ord.order_date)) as avg_delivery_time
+from order_items as ord_itm
+join orders ord
+using(order_id) 
+join shipping as shpng
+using(order_id)
+group by shpng.shiping_provider
+```
+---
+![image](https://github.com/user-attachments/assets/ed79f0b0-0338-45ca-be54-7b24e3ec2ada)
+---
+🟢.Q.18. Top 5 Customers by Orders in Each State
+Identify the top 5 customers with the highest number of orders (units)for each state.
+Challenge: Include the number of orders and total sales for each customer.
+```sql
+with customer_ord_information as (
+select cust.state,cust.first_name,cust.last_name
+,sum(ord_itm.quantity) as total_order_units,
+dense_rank()over(partition by cust.state order by sum(ord_itm.quantity) desc) as rnk
+from orders as ord
+join order_items as ord_itm
+using(order_id)
+join customers as cust
+using(customer_id)
+group by 1,2,3
+)
+
+select * from customer_ord_information
+where rnk <= 5
+```
+![image](https://github.com/user-attachments/assets/c0c061a6-152d-49b6-b5cc-c2664d180d9a)
+---
+
+
+
