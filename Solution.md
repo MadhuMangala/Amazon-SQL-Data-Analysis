@@ -405,10 +405,47 @@ group by 1,2,3
 select * from customer_ord_information
 where rnk <= 5
 ```
-
-
 ![image](https://github.com/user-attachments/assets/c0c061a6-152d-49b6-b5cc-c2664d180d9a)
 ---
+🟢.Q.19.Top 10 product with highest decreasing revenue ratio compare to last year(2022) and current_year(2023) 
+Challenge: Return product_id, product_name, category_name, 2022 revenue and 2023 revenue decrease ratio at end Round the result Note: Decrease ratio = cr-ls/ls* 100 (cs = current_year ls=last_year)
+```sql
+-- 19.Top 10 product with highest decreasing revenue ratio compare to last year(2022) and current_year(2023) 
+-- Challenge: Return product_id, product_name, category_name, 2022 revenue and 
+-- 2023 revenue decrease ratio at end Round the result 
+-- Note: Decrease ratio = cr-ls/ls* 100 (cs = current_year ls=last_year)
+with cte as (
+select p.product_id,p.product_name,cat.category_name,
+round(sum(case when year(o.order_date) = 2022 then (ord_itm.quantity*ord_itm.price_per_unit) else 0 end),2) as "total_rnv_two_two",
+round(sum(case when year(o.order_date) = 2023 then (ord_itm.quantity*ord_itm.price_per_unit) else 0 end),2) as "total_rnv_two_three"
+-- round(sum(ord_itm.quantity*ord_itm.price_per_unit),2)as total_rvn from 
+from order_items as ord_itm
+join orders as o
+using(order_id)
+join products as p
+using(product_id)
+join category as cat
+using(category_id)
+where year(o.order_date) in (2022,2023)
+group by 1,2,3
+)
+select *,round(((total_rnv_two_three - total_rnv_two_two)/total_rnv_two_two)*100,2) 
+as change_yoy from cte
+where total_rnv_two_three < total_rnv_two_two
+order by change_yoy
+limit 10
+-- select * from cte
+```
+---
+![image](https://github.com/user-attachments/assets/442b22cf-0a17-4864-b35d-5f9871867c52)
+
+---
+
+🟢.Q.20.Final Task: Stored Procedure Create a stored procedure that, when a product is sold, performs the following actions: 
+Inserts a new sales record into the orders and order_items tables. Updates the inventory table to reduce the stock based on the product and quantity purchased. 
+The procedure should ensure that the stock is adjusted immediately after recording the sale.
+
+```sql
 
 
-
+```
